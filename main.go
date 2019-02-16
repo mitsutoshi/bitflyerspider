@@ -1,23 +1,33 @@
 package main
 
 import (
+    "flag"
     "fmt"
     "github.com/gorilla/websocket"
     "github.com/mitsutoshi/bitflyergo"
     "github.com/mitsutoshi/bitflyerspider/helpers"
+    "log"
     "os"
     "os/signal"
 )
 
 const (
-    enableExecutions = false
-    enableBoard      = true
-    SymbolFXBTCJPY   = "FX_BTC_JPY"
+    SymbolFXBTCJPY = "FX_BTC_JPY"
+)
+
+var (
+    outOpt       = flag.String("o", "./", "File destination directory path.")
+    executionOpt = flag.Bool("e", false, "Acquire execution.")
+    boardOpt     = flag.Bool("b", false, "Acquire board.")
 )
 
 func main() {
 
-    mode := "json"
+    // オプションを解析
+    flag.Parse()
+    log.Println("File destination directory:", *executionOpt)
+    log.Println("Acquire execution:", *executionOpt)
+    log.Println("Acquire board:", *executionOpt)
 
     // シグナル受信の対応
     interrupt := make(chan os.Signal, 1)
@@ -32,8 +42,9 @@ func main() {
     exeCh := make(chan []bitflyergo.Execution)
     go wsclient.Receive(brdSnpCh, brdCh, exeCh)
 
+    mode := "csv"
     var executions []bitflyergo.Execution
-    if enableExecutions {
+    if *executionOpt {
 
         // websocketの約定履歴チャンネルの購読を開始する
         wsclient.SubscribeExecutions()
@@ -49,7 +60,7 @@ func main() {
     }
 
     var boards []bitflyergo.Board
-    if enableBoard {
+    if *boardOpt {
 
         // websocketの板情報チャンネルの購読を開始する
         wsclient.SubscribeBoardSnapshot()
