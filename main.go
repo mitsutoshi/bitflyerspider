@@ -68,7 +68,7 @@ func main() {
         } else if mode == "stderr" {
             go helpers.WriteExecutionsToStderr(&executions)
         } else {
-            go helpers.WriteExecutionsToFile(&executions, "csv", true, 100)
+            go helpers.WriteExecutionsToFile(&executions, "csv", true, 5000)
         }
     }
 
@@ -85,7 +85,7 @@ func main() {
         } else if mode == "stderr" {
             go helpers.WriteBoardToStderr(&boards)
         } else {
-            go helpers.WriteBoardsFile(&boards, 10)
+            go helpers.WriteBoardsFile(&boards, 5000)
         }
     }
 

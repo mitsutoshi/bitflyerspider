@@ -60,9 +60,11 @@ func WriteBoardTo(boards *[]bitflyergo.Board, writer *os.File) {
 
 func WriteExecutionsToFile(executions *[]bitflyergo.Execution, fileType string, headerOn bool, bufferSize int) {
 
+    prefix := "executions"
+
     // 保存先とするファイルの名前を取得
     today := time.Now()
-    name := createFileName("executions", today, fileType)
+    name := createFileName(prefix, today, fileType)
 
     // ファイルの有無をチェック
     exist := false
@@ -87,7 +89,7 @@ func WriteExecutionsToFile(executions *[]bitflyergo.Execution, fileType string, 
     for {
         if len(*executions) > bufferSize {
 
-            if time.Now().Truncate(time.Second * 60).After(today.Truncate(time.Second * 60)) {
+            if time.Now().Truncate(time.Minute * 60).After(today.Truncate(time.Minute * 60)) {
 
                 // ファイルを切り替えるためオープン中のファイルはクローズする
                 log.Println("File close.", name)
@@ -96,7 +98,7 @@ func WriteExecutionsToFile(executions *[]bitflyergo.Execution, fileType string, 
 
                 // 新しいファイルをオープン
                 today = time.Now()
-                name = createFileName("executions", today, fileType)
+                name = createFileName(prefix, today, fileType)
 
                 // ファイルの有無をチェックして同名ファイルが存在する場合は削除
                 if _, err := os.Stat(name); err == nil {
@@ -220,9 +222,11 @@ func ExecutionToJson(e *bitflyergo.Execution) string {
 
 func WriteBoardsFile(boards *[]bitflyergo.Board, bufferSize int) {
 
+    prefix := "boards"
+
     // 保存先とするファイルの名前を取得
     today := time.Now()
-    name := createFileName("boards", today, "json")
+    name := createFileName(prefix, today, "json")
 
     file, err := os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0755)
     log.Println("File open.", name)
@@ -235,7 +239,7 @@ func WriteBoardsFile(boards *[]bitflyergo.Board, bufferSize int) {
     for {
         if len(*boards) > bufferSize {
 
-            if time.Now().Truncate(time.Second * 60).After(today.Truncate(time.Second * 60)) {
+            if time.Now().Truncate(time.Minute * 60).After(today.Truncate(time.Minute * 60)) {
 
                 // ファイルを切り替えるためオープン中のファイルはクローズする
                 log.Println("File close.", name)
@@ -244,7 +248,7 @@ func WriteBoardsFile(boards *[]bitflyergo.Board, bufferSize int) {
 
                 // 新しいファイルをオープン
                 today = time.Now()
-                name = createFileName("executions", today, "json")
+                name = createFileName(prefix, today, "json")
 
                 // ファイルの有無をチェックして同名ファイルが存在する場合は削除
                 if _, err := os.Stat(name); err == nil {

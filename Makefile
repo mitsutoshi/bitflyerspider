@@ -18,11 +18,24 @@ dep-update: setup
 	dep ensure
 
 ## Build binary
+.PHONY: bin/$(NAME)
 bin/$(NAME):
-	go build -o bin/$(NAME) -ldflags "$(LDFLAGS)"
+	go build -o bin/$(VERSION)/$(NAME) -ldflags "$(LDFLAGS)"
 
 ## Show help.
 help:
 	@make2help $(MAKEFILE_LIST)
 
-.PHONY: bin/$(NAME)
+.PHONY: clean
+clean:
+	rm -rf bin/*
+	rm -rf vendor/*
+
+.PHONY: cross-build
+cross-build: dep-update
+	for os in darwin linux windows; do \
+		for arch in amd64 386; do \
+			GOOS=$$os GOARCH=$$arch CGO_ENABLED=0 go build -a -tags netgo -installsuffix netgo $(LDFLAGS) -o dist/$$os-$$arch/$(NAME); \
+		done; \
+	done
+	#echo $$os $$arch;\
