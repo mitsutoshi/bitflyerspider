@@ -16,15 +16,28 @@ const (
 )
 
 var (
+    version      string
+    revision     string
     outOpt       = flag.String("o", "./", "File destination directory path.")
     executionOpt = flag.Bool("e", false, "Acquire execution.")
     boardOpt     = flag.Bool("b", false, "Acquire board.")
+    verOpt       = flag.Bool("v", false, "Show version info.")
 )
 
 func main() {
 
     // オプションを解析
     flag.Parse()
+
+    // バージョン情報を出力
+    if *verOpt {
+        fmt.Printf("%s (rev %s)\n", version, revision)
+        os.Exit(0)
+    } else if !*executionOpt && !*boardOpt {
+        fmt.Println("You specified illegal option. Use -h option.")
+        os.Exit(1)
+    }
+
     log.Println("File destination directory:", *executionOpt)
     log.Println("Acquire execution:", *executionOpt)
     log.Println("Acquire board:", *executionOpt)
