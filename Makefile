@@ -24,3 +24,5 @@ bin/$(NAME):
 ## Show help.
 help:
 	@make2help $(MAKEFILE_LIST)
+
+.PHONY: bin/$(NAME)
