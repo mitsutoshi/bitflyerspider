@@ -22,6 +22,7 @@ var (
     executionOpt = flag.Bool("e", false, "Acquire execution.")
     boardOpt     = flag.Bool("b", false, "Acquire board.")
     verOpt       = flag.Bool("v", false, "Show version info.")
+    bufferSize   = 1000
 )
 
 func main() {
@@ -68,7 +69,7 @@ func main() {
         } else if mode == "stderr" {
             go helpers.WriteExecutionsToStderr(&executions)
         } else {
-            go helpers.WriteExecutionsToFile(&executions, "csv", true, 5000)
+            go helpers.WriteExecutionsToFile(&executions, "csv", true, bufferSize)
         }
     }
 
@@ -85,7 +86,7 @@ func main() {
         } else if mode == "stderr" {
             go helpers.WriteBoardToStderr(&boards)
         } else {
-            go helpers.WriteBoardsFile(&boards, 5000)
+            go helpers.WriteBoardsFile(&boards, bufferSize)
         }
     }
 

@@ -186,8 +186,8 @@ func getExecutionHeaders(delimiter rune) string {
 
 // 約定履歴のCSV出力用文字列を返します
 func ExecutionToCsv(e *bitflyergo.Execution) string {
-    return fmt.Sprintf("%d,%s,%s,%d,%f,%s,%s,%v",
-        e.Id, e.ExecDate, e.Side, int(e.Price), e.Size, e.BuyChildOrderAcceptanceId, e.SellChildOrderAcceptanceId, e.Delay)
+    return fmt.Sprintf("%d,%s,%s,%d,%.8f,%s,%s,%v",
+        e.Id, e.ExecDate, e.Side, int(e.Price), e.Size, e.BuyChildOrderAcceptanceId, e.SellChildOrderAcceptanceId, e.Delay.Seconds())
 }
 
 // 約定履歴のTSV出力用文字列を返します
