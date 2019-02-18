@@ -2,7 +2,7 @@ NAME     := bitflyerspider
 VERSION  := v1.0.2
 REVISION := $(shell git rev-parse --short HEAD)
 SRCS     := $(shell find . -type f -name *.go)
-LDFLAGS  := -X 'main.version=$(VERSION)' -X 'main.revision=$(REVISION)'
+LDFLAGS  := -ldflags="-s -w -X \"main.version=$(VERSION)\" -X \"main.revision=$(REVISION)\" -extldflags \"-static\""
 
 ## Setup this repository.
 setup:
@@ -33,9 +33,9 @@ clean:
 
 .PHONY: cross-build
 cross-build: dep-update
-	for os in darwin linux windows; do \
+	@for os in darwin linux windows; do \
 		for arch in amd64 386; do \
-			GOOS=$$os GOARCH=$$arch CGO_ENABLED=0 go build -a -tags netgo -installsuffix netgo $(LDFLAGS) -o dist/$$os-$$arch/$(NAME); \
+			echo "Building for os=$$os arch=$$arch"; \
+			GOOS=$$os GOARCH=$$arch CGO_ENABLED=0 go build -a -tags netgo -installsuffix netgo $(LDFLAGS) -o bin/$(VERSION)/$$os-$$arch/$(NAME); \
 		done; \
 	done
-	#echo $$os $$arch;\
