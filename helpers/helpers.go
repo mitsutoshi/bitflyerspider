@@ -12,6 +12,8 @@ import (
     "github.com/mitsutoshi/bitflyergo"
 )
 
+const filePermission os.FileMode = 0744
+
 func WriteExecutionsToStdout(executions *[]bitflyergo.Execution) {
     WriteExecutionsTo(executions, os.Stdout)
 }
@@ -73,7 +75,7 @@ func WriteExecutionsToFile(executions *[]bitflyergo.Execution, fileType string, 
     }
 
     // 約定履歴を書き込むためのファイルを開く
-    file, err := os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0755)
+    file, err := os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_APPEND, filePermission)
     log.Println("File open.", name)
     if err != nil {
         log.Fatal(err)
@@ -107,7 +109,7 @@ func WriteExecutionsToFile(executions *[]bitflyergo.Execution, fileType string, 
                     }
                 }
 
-                file, err = os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0755)
+                file, err = os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_APPEND, filePermission)
                 log.Println("File open.", name)
                 if err != nil {
                     log.Fatal(err)
@@ -163,41 +165,24 @@ func writeHeaders(file *os.File, fileType string) {
 
 func getExecutionHeaders(delimiter rune) string {
     t := reflect.TypeOf(bitflyergo.Execution{Price: 1})
+    fId, _ := t.FieldByName("Id")
+    fExecDate, _ := t.FieldByName("ExecDate")
+    fSide, _ := t.FieldByName("Side")
+    fPrice, _ := t.FieldByName("Price")
+    fSize, _ := t.FieldByName("Size")
+    fBuyChildOrderAcceptanceId, _ := t.FieldByName("BuyChildOrderAcceptanceId")
+    fSellChildOrderAcceptanceId, _ := t.FieldByName("SellChildOrderAcceptanceId")
+    fDelay, _ := t.FieldByName("Delay")
     return fmt.Sprintf("%s%c%s%c%s%c%s%c%s%c%s%c%s%c%v",
-        t.Field(0).Tag.Get("json"), delimiter,
-        t.Field(1).Tag.Get("json"), delimiter,
-        t.Field(2).Tag.Get("json"), delimiter,
-        t.Field(3).Tag.Get("json"), delimiter,
-        t.Field(4).Tag.Get("json"), delimiter,
-        t.Field(5).Tag.Get("json"), delimiter,
-        t.Field(6).Tag.Get("json"), delimiter,
-        t.Field(7).Tag.Get("json"))
+        fId.Tag.Get("json"), delimiter,
+        fExecDate.Tag.Get("json"), delimiter,
+        fSide.Tag.Get("json"), delimiter,
+        fPrice.Tag.Get("json"), delimiter,
+        fSize.Tag.Get("json"), delimiter,
+        fBuyChildOrderAcceptanceId.Tag.Get("json"), delimiter,
+        fSellChildOrderAcceptanceId.Tag.Get("json"), delimiter,
+        fDelay.Tag.Get("json"))
 }
-
-//type JsonFile struct {
-//    Data       *[]string
-//    BufferSize int
-//}
-
-//
-//func (pipe BoardStdOutPipe) Output() {
-//   var mu sync.Mutex
-//   for {
-//       if len(pipe.Rows) >= 1 {
-//           mu.Lock()
-//           for _, row := range pipe.Rows {
-//               fmt.Print(row.(Row).TsvRow())
-//           }
-//           pipe.Rows = nil
-//           mu.Unlock()
-//       }
-//       time.Sleep(100 * time.Millisecond)
-//   }
-//}
-//
-//type BoardFilePipe struct {
-//    Boards Board
-//}
 
 // 約定履歴のCSV出力用文字列を返します
 func ExecutionToCsv(e *bitflyergo.Execution) string {
@@ -207,8 +192,8 @@ func ExecutionToCsv(e *bitflyergo.Execution) string {
 
 // 約定履歴のTSV出力用文字列を返します
 func ExecutionToTsv(e *bitflyergo.Execution) string {
-    return fmt.Sprintf("%d\t%s\t%s\t%d\t%f\t%s\t%s\t%v",
-        e.Id, e.ExecDate, e.Side, int(e.Price), e.Size, e.BuyChildOrderAcceptanceId, e.SellChildOrderAcceptanceId, e.Delay)
+    return fmt.Sprintf("%d\t%s\t%s\t%d\t%.8f\t%s\t%s\t%v",
+        e.Id, e.ExecDate, e.Side, int(e.Price), e.Size, e.BuyChildOrderAcceptanceId, e.SellChildOrderAcceptanceId, e.Delay.Seconds())
 }
 
 // 約定履歴のJSON出力用文字列を返します
@@ -228,7 +213,7 @@ func WriteBoardsFile(boards *[]bitflyergo.Board, bufferSize int) {
     today := time.Now()
     name := createFileName(prefix, today, "json")
 
-    file, err := os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0755)
+    file, err := os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0744)
     log.Println("File open.", name)
     if err != nil {
         log.Fatal(err)
@@ -257,7 +242,7 @@ func WriteBoardsFile(boards *[]bitflyergo.Board, bufferSize int) {
                     }
                 }
 
-                file, err = os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0755)
+                file, err = os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0744)
                 log.Println("File open.", name)
                 if err != nil {
                     log.Fatal(err)
@@ -267,7 +252,7 @@ func WriteBoardsFile(boards *[]bitflyergo.Board, bufferSize int) {
 
             mu.Lock()
             for _, b := range *boards {
-				fmt.Fprintln(file, BoardToJson(&b))
+                fmt.Fprintln(file, BoardToJson(&b))
             }
             *boards = nil
             mu.Unlock()
