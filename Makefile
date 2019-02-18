@@ -1,5 +1,5 @@
 NAME     := bitflyerspider
-VERSION  := v1.0.0
+VERSION  := v1.0.2
 REVISION := $(shell git rev-parse --short HEAD)
 SRCS     := $(shell find . -type f -name *.go)
 LDFLAGS  := -X 'main.version=$(VERSION)' -X 'main.revision=$(REVISION)'
