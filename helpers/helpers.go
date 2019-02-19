@@ -12,7 +12,7 @@ import (
     "github.com/mitsutoshi/bitflyergo"
 )
 
-const filePermission os.FileMode = 0744
+const filePermission os.FileMode = 0644
 
 func WriteExecutionsToStdout(executions *[]bitflyergo.Execution) {
     WriteExecutionsTo(executions, os.Stdout)
