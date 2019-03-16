@@ -3,3 +3,4 @@ vendor/*
 *.iml
 !.gitkeep
 bin/
+.DS_Store
