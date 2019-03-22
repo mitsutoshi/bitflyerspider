@@ -54,7 +54,8 @@ func main() {
     brdSnpCh := make(chan bitflyergo.Board)
     brdCh := make(chan bitflyergo.Board)
     exeCh := make(chan []bitflyergo.Execution)
-    go wsclient.Receive(brdSnpCh, brdCh, exeCh)
+    errCh := make(chan error)
+    go wsclient.Receive(brdSnpCh, brdCh, exeCh, errCh)
 
     mode := "csv"
     var executions []bitflyergo.Execution
