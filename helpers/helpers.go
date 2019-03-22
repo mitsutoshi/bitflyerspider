@@ -91,7 +91,7 @@ func WriteExecutionsToFile(executions *[]bitflyergo.Execution, fileType string, 
     for {
         if len(*executions) > bufferSize {
 
-            if time.Now().Truncate(time.Minute * 60).After(today.Truncate(time.Minute * 60)) {
+            if time.Now().Truncate(time.Hour * 12).After(today.Truncate(time.Hour * 12)) {
 
                 // ファイルを切り替えるためオープン中のファイルはクローズする
                 log.Println("File close.", name)
