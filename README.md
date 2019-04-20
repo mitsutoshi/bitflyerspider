@@ -1,11 +1,15 @@
 # bitflyerspider
 
-## Usage
+bitFlyerのwebsocketから配信される約定履歴のデータを受信して、任意の出力先へ保存します。
 
-Options
+channelは、lightning_FX_BTC_JPYのみ対応しています。 
+
+## 使用方法
+
+bitflyerspiderを実行します。
 
 ```
-$ ./bin/bitflyerspider -h
+$ bitflyerspider -h
 Usage of ./bin/bitflyerspider:
   -b	Acquire board.
   -e	Acquire execution.
@@ -21,7 +25,7 @@ Usage of ./bin/bitflyerspider:
 |項目名|出力内容|
 |---|---|
 |id|約定ID|
-|exec_date|約定日時（UTF）|
+|exec_date|約定日時（UTC）|
 |price|約定価格|
 |size|約定サイズ（BTC）|
 |side|テイク方向（BUY/SELL）|
