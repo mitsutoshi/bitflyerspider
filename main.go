@@ -1,6 +1,9 @@
 package main
 
 import (
+    "cloud.google.com/go/bigquery"
+    //"cloud.google.com/go/civil"
+    "context"
     "flag"
     "fmt"
     "github.com/gorilla/websocket"
@@ -9,10 +12,19 @@ import (
     "log"
     "os"
     "os/signal"
+    "time"
 )
 
 const (
     SymbolFXBTCJPY = "FX_BTC_JPY"
+)
+
+// Write mode
+const (
+    modeStdout   = "stdout"
+    modeStderr   = "stderr"
+    modeCsv      = "csv"
+    modeBigQuery = "bigquery"
 )
 
 var (
@@ -57,7 +69,7 @@ func main() {
     errCh := make(chan error)
     go wsclient.Receive(brdSnpCh, brdCh, exeCh, errCh)
 
-    mode := "csv"
+    mode := modeBigQuery
     var executions []bitflyergo.Execution
     if *executionOpt {
 
@@ -65,13 +77,62 @@ func main() {
         wsclient.SubscribeExecutions()
 
         // 指定された出力先への出力を開始する
-        if mode == "stdout" {
+        if mode == modeStdout {
             go helpers.WriteExecutionsToStdout(&executions)
-        } else if mode == "stderr" {
+        } else if mode == modeStderr {
             go helpers.WriteExecutionsToStderr(&executions)
-        } else {
+        } else if mode == modeCsv {
             go helpers.WriteExecutionsToFile(&executions, "csv", true, bufferSize)
+        } else if mode == modeBigQuery {
+
+            go func() {
+
+                interval := 15 * time.Second
+                ctx := context.Background()
+                bqClient, err := bigquery.NewClient(ctx, "catbot")
+                if err != nil {
+                    log.Fatal(err)
+                }
+                inserter := bqClient.Dataset("bitflyer").Table("executions_all").Inserter()
+
+                for {
+                    to := len(executions)
+
+                    if to > 0 {
+
+                        // BigQueryへ登録するための型へ変換する
+                        var items []*helpers.Execution
+                        for i := 0; i < to; i++ {
+                            items = append(items, &helpers.Execution{
+                                Id:                         executions[i].Id,
+                                ExecDate:                   executions[i].ExecDate,
+                                Price:                      executions[i].Price,
+                                Size:                       executions[i].Size,
+                                Side:                       executions[i].Side,
+                                BuyChildOrderAcceptanceId:  executions[i].BuyChildOrderAcceptanceId,
+                                SellChildOrderAcceptanceId: executions[i].SellChildOrderAcceptanceId,
+                                Delay:                      executions[i].Delay.Seconds(),
+                            })
+                        }
+
+                        // Insert
+                        if err := inserter.Put(ctx, items); err != nil {
+                            log.Println(err, "data ->", items)
+                            continue
+                        }
+
+                        // Insertした要素を削除
+                        executions = executions[to:]
+                        log.Printf(" Finished write %v executions to BigQuery.\n", len(executions))
+                    }
+                    time.Sleep(interval)
+                }
+            }()
+
+        } else {
+            panic(fmt.Sprintf("Unkown mode '%v'", mode))
         }
+
     }
 
     var boards []bitflyergo.Board

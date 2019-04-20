@@ -1,6 +1,7 @@
 package helpers
 
 import (
+    "cloud.google.com/go/bigquery"
     "encoding/json"
     "fmt"
     "log"
@@ -13,6 +14,35 @@ import (
 )
 
 const filePermission os.FileMode = 0644
+
+type Execution struct {
+    Id                         int64     // ID
+    ExecDate                   time.Time // 日時
+    Price                      float64   // 価格
+    Size                       float64   // サイズ
+    Side                       string    // 売買種別
+    BuyChildOrderAcceptanceId  string    // 買い注文ID
+    SellChildOrderAcceptanceId string    // 売り注文ID
+    Delay                      float64   // 受信遅延時間
+}
+
+func (e *Execution) Save() (row map[string]bigquery.Value, insertID string, err error) {
+    return map[string]bigquery.Value{
+        "id":                             e.Id,
+        "exec_date":                      e.ExecDate,
+        "size":                           e.Size,
+        "side":                           e.Side,
+        "price":                          e.Price,
+        "buy_child_order_acceptance_id":  e.BuyChildOrderAcceptanceId,
+        "sell_child_order_acceptance_id": e.SellChildOrderAcceptanceId,
+        "delay":                          e.Delay,
+    }, "", nil
+}
+
+func WriteExecutionsToBigQuery(executions []bitflyergo.Execution) {
+    //WriteExecutionsTo(executions, os.Stdout)
+
+}
 
 func WriteExecutionsToStdout(executions *[]bitflyergo.Execution) {
     WriteExecutionsTo(executions, os.Stdout)
