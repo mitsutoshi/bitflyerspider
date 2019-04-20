@@ -10,12 +10,12 @@
   version = "v1.4.0"
 
 [[projects]]
-  digest = "1:93d12c6a95bf83f62ca21122be8ee7bd65ce91a7025433f76718bb6675bf9977"
+  digest = "1:61fecd191b2ad3362b835caab2b89e60ef578968fa74c161edeed3ab7118e53b"
   name = "github.com/mitsutoshi/bitflyergo"
   packages = ["."]
   pruneopts = "UT"
-  revision = "bdf2345e438a0b4d1797cdb7be89f2aebb135930"
-  version = "v1.0.10"
+  revision = "51ff613919dcc4f2a6cf8f51988556e281da4412"
+  version = "v1.5.1"
 
 [solve-meta]
   analyzer-name = "dep"
