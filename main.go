@@ -2,41 +2,53 @@ package main
 
 import (
     "cloud.google.com/go/bigquery"
-    "io"
-
-    //"cloud.google.com/go/civil"
     "context"
     "flag"
     "fmt"
     "github.com/gorilla/websocket"
     "github.com/mitsutoshi/bitflyergo"
     "github.com/mitsutoshi/bitflyerspider/helpers"
+    "io"
     "log"
     "os"
     "os/signal"
+
+    "github.com/BurntSushi/toml"
     "time"
 )
 
+type Config struct {
+    Dest     string `toml:"dest"`
+    BigQuery BigQueryConfig
+}
+
+type BigQueryConfig struct {
+    Project string `toml:"project"`
+    Dataset string `toml:"dataset"`
+    Table   string `toml:"table"`
+}
+
 const (
     SymbolFXBTCJPY = "FX_BTC_JPY"
+    modeStdout     = "stdout"
+    modeStderr     = "stderr"
+    modeCsv        = "csv"
+    modeBigQuery   = "bigquery"
+    logFileName    = "application.log"
 )
 
-// Write mode
-const (
-    modeStdout   = "stdout"
-    modeStderr   = "stderr"
-    modeCsv      = "csv"
-    modeBigQuery = "bigquery"
-)
-
+// 起動オプション
 var (
-    version      string
-    revision     string
     outOpt       = flag.String("o", "./", "File destination directory path.")
     executionOpt = flag.Bool("e", false, "Acquire execution.")
     boardOpt     = flag.Bool("b", false, "Acquire board.")
     verOpt       = flag.Bool("v", false, "Show version info.")
-    bufferSize   = 1000
+)
+
+var (
+    version    string
+    revision   string
+    bufferSize = 1000
 )
 
 func main() {
@@ -53,20 +65,43 @@ func main() {
         os.Exit(1)
     }
 
-    // ログファイル作成
-    logfile, err := os.OpenFile("application.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+    /*
+
+    ログファイルのセットアップ
+
+     */
+
+    logfile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
     if err != nil {
         log.Panicf("Cannot open %v: %v\n", logfile, err.Error())
     }
     defer logfile.Close()
-
-    // ログをファイルと標準出力の両方へ出力するように指定
-    log.SetOutput(io.MultiWriter(logfile, os.Stdout))
+    log.SetOutput(io.MultiWriter(logfile, os.Stdout)) // ログをファイルと標準出力の両方へ出力するように指定
     log.SetFlags(log.Ldate | log.Ltime)
 
-    log.Println("File destination directory:", *executionOpt)
-    log.Println("Acquire execution:", *executionOpt)
-    log.Println("Acquire board:", *executionOpt)
+    /*
+
+    設定ファイルのロード
+
+    */
+    var config Config
+    _, err = toml.DecodeFile("./config.toml", &config)
+    if err != nil {
+        panic(err)
+    }
+
+    /*
+
+    起動パラメータ、設定をログに出力
+
+    */
+
+    log.Printf("Options execution: %v, board: %v\n", *executionOpt, *boardOpt)
+    log.Printf("Destination: %s\n", config.Dest)
+    if config.Dest == modeBigQuery {
+        log.Printf("BigQuery's destination: %s.%s.%s\n",
+            config.BigQuery.Project, config.BigQuery.Dataset, config.BigQuery.Table)
+    }
 
     // シグナル受信の対応
     interrupt := make(chan os.Signal, 1)
@@ -102,15 +137,14 @@ func main() {
 
                 interval := 15 * time.Second
                 ctx := context.Background()
-                bqClient, err := bigquery.NewClient(ctx, "catbot")
+                bqClient, err := bigquery.NewClient(ctx, config.BigQuery.Project)
                 if err != nil {
                     log.Fatal(err)
                 }
-                inserter := bqClient.Dataset("bitflyer").Table("executions_all").Inserter()
+                inserter := bqClient.Dataset(config.BigQuery.Dataset).Table(config.BigQuery.Table).Inserter()
 
                 for {
                     to := len(executions)
-
                     if to > 0 {
 
                         // BigQueryへ登録するための型へ変換する
@@ -145,7 +179,6 @@ func main() {
         } else {
             panic(fmt.Sprintf("Unkown mode '%v'", mode))
         }
-
     }
 
     var boards []bitflyergo.Board

@@ -19,6 +19,14 @@
   version = "v0.37.4"
 
 [[projects]]
+  digest = "1:9f3b30d9f8e0d7040f729b82dcbc8f0dead820a133b3147ce355fc451f32d761"
+  name = "github.com/BurntSushi/toml"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3012a1dbe2e4bd1391d42b32f0577cb7bbc7f005"
+  version = "v0.3.1"
+
+[[projects]]
   digest = "1:239c4c7fd2159585454003d9be7207167970194216193a8a210b8d29576f19c9"
   name = "github.com/golang/protobuf"
   packages = [
@@ -246,6 +254,7 @@
   analyzer-version = 1
   input-imports = [
     "cloud.google.com/go/bigquery",
+    "github.com/BurntSushi/toml",
     "github.com/gorilla/websocket",
     "github.com/mitsutoshi/bitflyergo",
   ]

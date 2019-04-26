@@ -1,0 +1,6 @@
+dest = "bigquery" # bigquery | csv | stdout | stderr
+
+[bigquery]
+project = "catbot"
+dataset = "bitflyer"
+table = "executions_all"
