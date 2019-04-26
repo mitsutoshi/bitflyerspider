@@ -2,6 +2,8 @@ package main
 
 import (
     "cloud.google.com/go/bigquery"
+    "io"
+
     //"cloud.google.com/go/civil"
     "context"
     "flag"
@@ -50,6 +52,17 @@ func main() {
         fmt.Println("You specified illegal option. Use -h option.")
         os.Exit(1)
     }
+
+    // ログファイル作成
+    logfile, err := os.OpenFile("application.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+    if err != nil {
+        log.Panicf("Cannot open %v: %v\n", logfile, err.Error())
+    }
+    defer logfile.Close()
+
+    // ログをファイルと標準出力の両方へ出力するように指定
+    log.SetOutput(io.MultiWriter(logfile, os.Stdout))
+    log.SetFlags(log.Ldate | log.Ltime)
 
     log.Println("File destination directory:", *executionOpt)
     log.Println("Acquire execution:", *executionOpt)
