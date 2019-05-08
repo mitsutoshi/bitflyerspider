@@ -23,18 +23,20 @@ type Config struct {
 }
 
 type BigQueryConfig struct {
-    Project string `toml:"project"`
-    Dataset string `toml:"dataset"`
-    Table   string `toml:"table"`
+    Project             string `toml:"project"`
+    Dataset             string `toml:"dataset"`
+    Table               string `toml:"table"`
+    CredentialsFilePath string `toml:credentialsFilePath`
 }
 
 const (
-    SymbolFXBTCJPY = "FX_BTC_JPY"
-    modeStdout     = "stdout"
-    modeStderr     = "stderr"
-    modeCsv        = "csv"
-    modeBigQuery   = "bigquery"
-    logFileName    = "application.log"
+    SymbolFXBTCJPY         = "FX_BTC_JPY"
+    modeStdout             = "stdout"
+    modeStderr             = "stderr"
+    modeCsv                = "csv"
+    modeBigQuery           = "bigquery"
+    logFileName            = "application.log"
+    gAppCredentialsEnvName = "GOOGLE_APPLICATION_CREDENTIALS"
 )
 
 // 起動オプション
@@ -67,9 +69,9 @@ func main() {
 
     /*
 
-    ログファイルのセットアップ
+       ログファイルのセットアップ
 
-     */
+    */
 
     logfile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
     if err != nil {
@@ -81,7 +83,7 @@ func main() {
 
     /*
 
-    設定ファイルのロード
+       設定ファイルのロード
 
     */
     var config Config
@@ -92,13 +94,16 @@ func main() {
 
     /*
 
-    起動パラメータ、設定をログに出力
+       起動パラメータ、設定をログに出力
 
     */
 
     log.Printf("Options execution: %v, board: %v\n", *executionOpt, *boardOpt)
     log.Printf("Destination: %s\n", config.Dest)
     if config.Dest == modeBigQuery {
+        if config.BigQuery.CredentialsFilePath != "" {
+            os.Setenv(gAppCredentialsEnvName, config.BigQuery.CredentialsFilePath)
+        }
         log.Printf("BigQuery's destination: %s.%s.%s\n",
             config.BigQuery.Project, config.BigQuery.Dataset, config.BigQuery.Table)
     }

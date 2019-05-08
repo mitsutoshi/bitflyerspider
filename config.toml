@@ -4,3 +4,4 @@ dest = "bigquery" # bigquery | csv | stdout | stderr
 project = "catbot"
 dataset = "bitflyer"
 table = "executions_all"
+credentialsFilePath = "~/.gcp/catbot-2e6be2de987c.json"

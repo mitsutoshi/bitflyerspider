@@ -1,9 +1,9 @@
 NAME     := bitflyerspider
-VERSION  := v1.3.0
+VERSION  := v1.4.0
 REVISION := $(shell git rev-parse --short HEAD)
 SRCS     := $(shell find . -type f -name *.go)
 LDFLAGS  := -ldflags="-s -w -X \"main.version=$(VERSION)\" -X \"main.revision=$(REVISION)\" -extldflags \"-static\""
-S3BUCKET  := cryptocurrency-at
+S3BUCKET := artifact-0
 
 ## Setup this repository
 setup:
@@ -18,10 +18,10 @@ dep-init: setup
 dep-update: setup
 	dep ensure
 
-## Build binary
 .PHONY: build
-bin/$(NAME):
-	go build -o bin/$(VERSION)/$(NAME) -ldflags "$(LDFLAGS)"
+## Build binary
+build:
+	go build -o bin/$(NAME) -ldflags $(LDFLAGS)
 
 ## Show help
 help:
@@ -39,12 +39,12 @@ cross-build: dep-update
 	@for os in linux; do \
 		for arch in amd64; do \
 			echo "Building for os=$$os arch=$$arch"; \
-			GOOS=$$os GOARCH=$$arch CGO_ENABLED=0 go build -a -tags netgo -installsuffix netgo $(LDFLAGS) -o bin/$(VERSION)/$$os-$$arch/$(NAME); \
+			GOOS=$$os GOARCH=$$arch CGO_ENABLED=0 go build -a -tags netgo -installsuffix netgo $(LDFLAGS) -o bin/$$os-$$arch/$(NAME); \
 		done; \
 	done
 
 .PHONY: deploy
 ## Deploy binary file.
 deploy:
-	aws s3 cp bin/$(VERSION)/linux-amd64/$(NAME) s3://$(S3BUCKET)/bitflyerspider/linux-amd64/$(NAME)
+	aws s3 cp bin/linux-amd64/$(NAME) s3://$(S3BUCKET)/bitflyerspider/linux-amd64/$(NAME)
 
