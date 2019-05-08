@@ -9,7 +9,6 @@ phases:
             - dep ensure -update
     build:
         commands:
-            - go test -v ./tests
             - make cross-build
 artifacts:
     files:
