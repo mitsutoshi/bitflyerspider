@@ -84,6 +84,8 @@ func main() {
         panic(err)
     }
     log.Printf("Load config file: %s\n", *confOpt)
+    log.Println("Config -> dryrun=%v, dest=%v, execution=%v, board=%v\n",
+        config.DryRun, config.Dest, config.Execution, config.Board)
 
     // GCPへ接続するための認証情報をセットアップ
     log.Printf("Destination: %s\n", config.Dest)
