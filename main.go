@@ -84,8 +84,14 @@ func main() {
         panic(err)
     }
     log.Printf("Load config file: %s\n", *confOpt)
-    log.Println("Config -> dryrun=%v, dest=%v, execution=%v, board=%v\n",
+    log.Printf("Config -> dryrun=%v, dest=%v, execution=%v, board=%v\n",
         config.DryRun, config.Dest, config.Execution, config.Board)
+
+    // 約定履歴の取得と板の取得の両方が無効化されている場合は終了
+    if !config.Execution && !config.Board {
+        log.Printf("Target is not specified.")
+        os.Exit(1)
+    }
 
     // GCPへ接続するための認証情報をセットアップ
     log.Printf("Destination: %s\n", config.Dest)
