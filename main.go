@@ -136,45 +136,45 @@ func main() {
             go bitflyerspider.WriteExecutionsToFile(&executions, "csv", true, bufferSize)
         } else if config.Dest == modeBigQuery {
 
-            if !config.DryRun {
-                log.Println("Start to writing executions to BigQuery.")
-                go func() {
-                    interval := 15 * time.Second
-                    inserter := bqClient.Dataset(config.BigQuery.Dataset).Table(config.BigQuery.ExecutionsTable).Inserter()
+            log.Println("Start to writing executions to BigQuery.")
+            go func() {
+                interval := 60 * time.Second
+                inserter := bqClient.Dataset(config.BigQuery.Dataset).Table(config.BigQuery.ExecutionsTable).Inserter()
 
-                    for {
-                        to := len(executions)
-                        if to > 0 {
+                for {
+                    to := len(executions)
+                    if to > 0 {
 
-                            // BigQueryへ登録するための型へ変換する
-                            var items []*bq.BqExecution
-                            for i := 0; i < to; i++ {
-                                items = append(items, &bq.BqExecution{
-                                    Id:                         executions[i].Id,
-                                    ExecDate:                   executions[i].ExecDate,
-                                    Price:                      executions[i].Price,
-                                    Size:                       executions[i].Size,
-                                    Side:                       executions[i].Side,
-                                    BuyChildOrderAcceptanceId:  executions[i].BuyChildOrderAcceptanceId,
-                                    SellChildOrderAcceptanceId: executions[i].SellChildOrderAcceptanceId,
-                                    Delay:                      executions[i].Delay.Seconds(),
-                                })
-                            }
+                        // BigQueryへ登録するための型へ変換する
+                        var items []*bq.BqExecution
+                        for i := 0; i < to; i++ {
+                            items = append(items, &bq.BqExecution{
+                                Id:                         executions[i].Id,
+                                ExecDate:                   executions[i].ExecDate,
+                                Price:                      executions[i].Price,
+                                Size:                       executions[i].Size,
+                                Side:                       executions[i].Side,
+                                BuyChildOrderAcceptanceId:  executions[i].BuyChildOrderAcceptanceId,
+                                SellChildOrderAcceptanceId: executions[i].SellChildOrderAcceptanceId,
+                                Delay:                      executions[i].Delay.Seconds(),
+                            })
+                        }
 
-                            // Insert
+                        // Insert
+                        if !config.DryRun {
                             if err := inserter.Put(ctx, items); err != nil {
                                 log.Println(err, "data ->", items)
                                 continue
                             }
-
-                            // Insertした要素を削除
-                            executions = executions[to:]
-                            log.Printf(" Finished write %v executions to BigQuery.\n", len(executions))
                         }
-                        time.Sleep(interval)
+
+                        // Insertした要素を削除
+                        executions = executions[to:]
+                        log.Printf(" Finished write %v executions to BigQuery.\n", len(executions))
                     }
-                }()
-            }
+                    time.Sleep(interval)
+                }
+            }()
 
         } else {
             panic(fmt.Sprintf("Unkown mode '%v'", config.Dest))
@@ -191,10 +191,9 @@ func main() {
         go collector.Agg()
 
         // BigQueryへBoardsを登録
-        if !config.DryRun {
-            log.Println("Start to writing boards to BigQuery.")
-            go writeBoardBigQuery()
-        }
+        log.Println("Start to writing boards to BigQuery.")
+        go writeBoardBigQuery()
+
     }
 
     for {
@@ -227,7 +226,7 @@ func main() {
 func writeBoardBigQuery() {
 
     const interval = 5 * time.Second // Boardの単位時間ごとのサマリの保持件数をチェックする間隔
-    const threhold = 60 * 1 // BigQueryへの登録処理を実行するサマリの件数（1800秒分 = 30分ごと）
+    const threhold = 60 * 15         // BigQueryへの登録処理を実行するサマリの件数（900秒分 = 15分ごと）
 
     // Boardテーブルのinserter
     inserter := bqClient.Dataset(config.BigQuery.Dataset).Table(config.BigQuery.BoardsTable).Inserter()
@@ -238,14 +237,17 @@ func writeBoardBigQuery() {
         if len(collector.SummaryPerSec) >= threhold {
             i := len(collector.SummaryPerSec)
             items := collector.SummaryPerSec[:i]
-            err := inserter.Put(ctx, items)
-            if err != nil {
-                log.Println(err, "data ->", items)
-            } else {
 
-                // 保存が完了したBoardはitemsから削除
-                log.Printf(" Finished write %v executions to BigQuery.\n", len(items))
-                collector.SummaryPerSec = collector.SummaryPerSec[i:]
+            if !config.DryRun {
+                err := inserter.Put(ctx, items)
+                if err != nil {
+                    log.Println(err, "data ->", items)
+                } else {
+
+                    // 保存が完了したBoardはitemsから削除
+                    log.Printf(" Finished write %v boards to BigQuery.\n", len(items))
+                    collector.SummaryPerSec = collector.SummaryPerSec[i:]
+                }
             }
         }
         time.Sleep(interval)
