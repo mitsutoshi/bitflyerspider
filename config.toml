@@ -1,6 +1,6 @@
 dryrun = false
 dest = "bigquery" # bigquery | csv
-executions = true
+execution = true
 board = true
 
 [bigquery]
