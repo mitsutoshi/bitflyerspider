@@ -1,5 +1,5 @@
 NAME     := bitflyerspider
-VERSION  := v1.4.1
+VERSION  := v1.5.1
 REVISION := $(shell git rev-parse --short HEAD)
 SRCS     := $(shell find . -type f -name *.go)
 LDFLAGS  := -ldflags="-s -w -X \"main.version=$(VERSION)\" -X \"main.revision=$(REVISION)\" -extldflags \"-static\""
@@ -46,5 +46,5 @@ cross-build: dep-update
 .PHONY: deploy
 ## Deploy binary file.
 deploy:
-	aws s3 cp bin/linux-amd64/$(NAME) s3://$(S3BUCKET)/bitflyerspider/linux-amd64/$(NAME)
+	aws s3 cp bin/linux-amd64/$(NAME) s3://$(S3BUCKET)/bitflyerspider/$(NAME)
 
