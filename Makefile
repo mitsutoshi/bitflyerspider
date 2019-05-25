@@ -21,7 +21,7 @@ dep-update: setup
 .PHONY: build
 ## Build binary
 build:
-	go build -o bin/$(NAME) -ldflags $(LDFLAGS)
+	go build -o bin/$(NAME) $(LDFLAGS)
 
 ## Show help
 help:
