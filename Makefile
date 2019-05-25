@@ -1,5 +1,5 @@
 NAME     := bitflyerspider
-VERSION  := v1.5.4
+VERSION  := v1.6.0
 REVISION := $(shell git rev-parse --short HEAD)
 SRCS     := $(shell find . -type f -name *.go)
 LDFLAGS  := -ldflags="-s -w -X \"main.version=$(VERSION)\" -X \"main.revision=$(REVISION)\" -extldflags \"-static\""

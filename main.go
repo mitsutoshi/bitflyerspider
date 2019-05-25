@@ -141,6 +141,8 @@ func main() {
                 interval := 60 * time.Second
                 inserter := bqClient.Dataset(config.BigQuery.Dataset).Table(config.BigQuery.ExecutionsTable).Inserter()
 
+                var item *bq.BqExecution
+
                 for {
                     to := len(executions)
                     if to > 0 {
@@ -148,16 +150,38 @@ func main() {
                         // BigQueryへ登録するための型へ変換する
                         var items []*bq.BqExecution
                         for i := 0; i < to; i++ {
-                            items = append(items, &bq.BqExecution{
-                                Id:                         executions[i].Id,
-                                ExecDate:                   executions[i].ExecDate,
-                                Price:                      executions[i].Price,
-                                Size:                       executions[i].Size,
-                                Side:                       executions[i].Side,
-                                BuyChildOrderAcceptanceId:  executions[i].BuyChildOrderAcceptanceId,
-                                SellChildOrderAcceptanceId: executions[i].SellChildOrderAcceptanceId,
-                                Delay:                      executions[i].Delay.Seconds(),
-                            })
+
+                            // 新しい約定履歴が、itemとマージ可能かチェック
+                            if item != nil && executions[i].Side == item.Side && executions[i].Price == item.Price &&
+                                ((item.Side == "BUY" && executions[i].BuyChildOrderAcceptanceId == item.BuyChildOrderAcceptanceId) ||
+                                    (item.Side == "SELL" && executions[i].SellChildOrderAcceptanceId == item.SellChildOrderAcceptanceId)) {
+
+                                // 可能ならサイズをマージする。
+                                // 約定日時、ID、買い注文ID、売り注文ID、遅延秒数は１件目のデータのものを採用する、時間などはほぼずれないので問題ない
+                                item.Size += executions[i].Size
+                                //fmt.Printf("Mrg item %v, side=%v, size=%v\n", item.Id, item.Side, item.Size)
+
+                            } else {
+
+                                // マージできないため、itemを区切る
+                                if item != nil {
+                                    items = append(items, item)
+                                    //fmt.Printf("Apd item %v, side=%v, size=%v\n", item.Id, item.Side, item.Size)
+                                }
+
+                                // 新たな約定履歴のitemを作成
+                                item = &bq.BqExecution{
+                                    Id:                         executions[i].Id,
+                                    ExecDate:                   executions[i].ExecDate,
+                                    Price:                      executions[i].Price,
+                                    Size:                       executions[i].Size,
+                                    Side:                       executions[i].Side,
+                                    BuyChildOrderAcceptanceId:  executions[i].BuyChildOrderAcceptanceId,
+                                    SellChildOrderAcceptanceId: executions[i].SellChildOrderAcceptanceId,
+                                    Delay:                      executions[i].Delay.Seconds(),
+                                }
+                                //fmt.Printf("New item %v, side=%v, size=%v\n", item.Id, item.Side, item.Size)
+                            }
                         }
 
                         // Insert
@@ -193,7 +217,6 @@ func main() {
         // BigQueryへBoardsを登録
         log.Println("Start to writing boards to BigQuery.")
         go writeBoardBigQuery()
-
     }
 
     for {
@@ -226,7 +249,7 @@ func main() {
 func writeBoardBigQuery() {
 
     const interval = 5 * time.Second // Boardの単位時間ごとのサマリの保持件数をチェックする間隔
-    const threhold = 60 * 15         // BigQueryへの登録処理を実行するサマリの件数（900秒分 = 15分ごと）
+    const threhold = 60 * 5          // BigQueryへの登録処理を実行するサマリの件数（900秒分 = 15分ごと）
 
     // Boardテーブルのinserter
     inserter := bqClient.Dataset(config.BigQuery.Dataset).Table(config.BigQuery.BoardsTable).Inserter()
