@@ -4,3 +4,4 @@ vendor/*
 !.gitkeep
 bin/
 .DS_Store
+*.log
