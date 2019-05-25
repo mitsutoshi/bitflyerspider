@@ -28,7 +28,7 @@ type Config struct {
 type BigQueryConfig struct {
     Project             string `toml:"project"`
     Dataset             string `toml:"dataset"`
-    ExecutionsTable     string `toml:"executions_table"`
+    ExecutionsTable     string `toml:"executionsTable"`
     BoardsTable         string `toml:"boardsTable"`
     CredentialsFilePath string `toml:credentialsFilePath`
 }
@@ -129,6 +129,7 @@ func main() {
         } else if config.Dest == modeBigQuery {
 
             if !config.DryRun {
+                log.Println("Start to writing executions to BigQuery.")
                 go func() {
                     interval := 15 * time.Second
                     inserter := bqClient.Dataset(config.BigQuery.Dataset).Table(config.BigQuery.ExecutionsTable).Inserter()
@@ -183,6 +184,7 @@ func main() {
 
         // BigQueryへBoardsを登録
         if !config.DryRun {
+            log.Println("Start to writing boards to BigQuery.")
             go writeBoardBigQuery()
         }
     }
@@ -217,7 +219,7 @@ func main() {
 func writeBoardBigQuery() {
 
     const interval = 5 * time.Second // Boardの単位時間ごとのサマリの保持件数をチェックする間隔
-    const threhold = 60 * 30         // BigQueryへの登録処理を実行するサマリの件数（1800秒分 = 30分ごと）
+    const threhold = 60 * 1 // BigQueryへの登録処理を実行するサマリの件数（1800秒分 = 30分ごと）
 
     // Boardテーブルのinserter
     inserter := bqClient.Dataset(config.BigQuery.Dataset).Table(config.BigQuery.BoardsTable).Inserter()

@@ -6,6 +6,6 @@ board = true
 [bigquery]
 project = ""
 dataset = ""
-executions_table = ""
+executionsTable = ""
 boardsTable = ""
 credentialsFilePath = ""
