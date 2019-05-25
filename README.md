@@ -34,3 +34,9 @@ Usage of ./bin/bitflyerspider:
 |delay|受信遅延時間（秒）|
 
 ### 板
+
+|time||
+|ask||
+|ask depth||
+|bid depth||
+|spread||

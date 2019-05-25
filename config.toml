@@ -1,7 +1,11 @@
-dest = "bigquery" # bigquery | csv | stdout | stderr
+dryrun = false
+dest = "bigquery" # bigquery | csv
+executions = true
+board = true
 
 [bigquery]
-project = "catbot"
-dataset = "bitflyer"
-table = "executions_all"
-credentialsFilePath = "~/.gcp/catbot-2e6be2de987c.json"
+project = ""
+dataset = ""
+executions_table = ""
+boardsTable = ""
+credentialsFilePath = ""
