@@ -194,7 +194,7 @@ func main() {
 
                         // Insertした要素を削除
                         executions = executions[to:]
-                        log.Printf(" Finished write %v executions to BigQuery.\n", len(executions))
+                        log.Printf("Finished write %v executions to BigQuery.\n", len(executions))
                     }
                     time.Sleep(interval)
                 }
@@ -223,9 +223,6 @@ func main() {
         select {
         case boardSnap := <-brdSnpCh: // 板情報スナップショット受信
             collector.UpdateBoard(&boardSnap, true)
-
-            // 一度目を受信した後は差分情報のみで板を更新するため、snapshotはUnsubscribeする
-            wsclient.UnsubscribeBoardSnapshot()
             break
 
         case board := <-brdCh: // 板情報受信
@@ -249,7 +246,7 @@ func main() {
 func writeBoardBigQuery() {
 
     const interval = 5 * time.Second // Boardの単位時間ごとのサマリの保持件数をチェックする間隔
-    const threhold = 60 * 5          // BigQueryへの登録処理を実行するサマリの件数（900秒分 = 15分ごと）
+    const threhold = 60 * 5          // BigQueryへの登録処理を実行するサマリの件数（300秒分 = 5分ごと）
 
     // Boardテーブルのinserter
     inserter := bqClient.Dataset(config.BigQuery.Dataset).Table(config.BigQuery.BoardsTable).Inserter()
@@ -268,7 +265,7 @@ func writeBoardBigQuery() {
                 } else {
 
                     // 保存が完了したBoardはitemsから削除
-                    log.Printf(" Finished write %v boards to BigQuery.\n", len(items))
+                    log.Printf("Finished write %v boards to BigQuery.\n", len(items))
                     collector.SummaryPerSec = collector.SummaryPerSec[i:]
                 }
             }
