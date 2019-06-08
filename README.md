@@ -18,9 +18,9 @@ Usage of ./bin/bitflyerspider:
   -v	Show version info.
 ```
 
-## 出力フォーマット
+## BigQueryテーブル定義
 
-### 約定履歴
+##### executions
 
 |項目名|出力内容|
 |---|---|
@@ -33,10 +33,14 @@ Usage of ./bin/bitflyerspider:
 |sell_child_order_acceptance_id|売り注文ID|
 |delay|受信遅延時間（秒）|
 
-### 板
+##### boards
 
-|time||
-|ask||
-|ask depth||
-|bid depth||
-|spread||
+|name|type|nullable|
+|---|---|---|
+|time|TIMESTAMP|NULLABLE|
+|best_ask_price|INTEGER|NULLABLE|
+|best_ask_size|FLOAT|NULLABLE|
+|best_bid_price|INTEGER|NULLABLE|
+|best_bid_size|FLOAT|NULLABLE|
+|mid_price|INTEGER|NULLABLE|
+|spread|INTEGER|NULLABLE|

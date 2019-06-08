@@ -191,10 +191,10 @@ func main() {
                                 continue
                             }
                         }
+                        log.Printf("Finished write %v executions to BigQuery.\n", len(items))
 
                         // Insertした要素を削除
                         executions = executions[to:]
-                        log.Printf("Finished write %v executions to BigQuery.\n", len(executions))
                     }
                     time.Sleep(interval)
                 }
