@@ -1,9 +1,9 @@
 NAME     := bitflyerspider
-VERSION  := v1.6.2
+VERSION  := v1.7.0
 REVISION := $(shell git rev-parse --short HEAD)
 SRCS     := $(shell find . -type f -name *.go)
 LDFLAGS  := -ldflags="-s -w -X \"main.version=$(VERSION)\" -X \"main.revision=$(REVISION)\" -extldflags \"-static\""
-S3BUCKET := artifact-0
+S3BUCKET := artifacts-0
 
 ## Setup this repository
 setup:
@@ -12,6 +12,7 @@ setup:
 
 ## Install dependencies
 dep-init: setup
+	go mod init
 	dep init
 
 ## Update dependencies
@@ -35,7 +36,7 @@ clean:
 
 .PHONY: cross-build
 ## Cross-build
-cross-build: dep-update
+cross-build:
 	@for os in linux; do \
 		for arch in amd64; do \
 			echo "Building for os=$$os arch=$$arch"; \

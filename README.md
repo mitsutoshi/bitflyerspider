@@ -1,37 +1,34 @@
 # bitflyerspider
 
-bitFlyerのwebsocketから配信される約定履歴のデータを受信して、任意の出力先へ保存します。
+bitflyerspider is tool collecting delivered data from bitflyer websoket. received data can be stored to the BigQuery or file.
 
-channelは、lightning_FX_BTC_JPYのみ対応しています。 
+websocket channel is coresponded only `lightning_FX_BTC_JPY`.
 
-## 使用方法
+## How to use
 
-bitflyerspiderを実行します。
+1. Write config file (see config.toml).
+
+2. Execute bitflyerspider
 
 ```
-$ bitflyerspider -h
-Usage of ./bin/bitflyerspider:
-  -b	Acquire board.
-  -e	Acquire execution.
-  -o string
-    	File destination directory path. (default "./")
-  -v	Show version info.
+./bitflyerspider -c config.toml
 ```
 
-## BigQueryテーブル定義
+## BigQuery fields structure
 
 ##### executions
 
-|項目名|出力内容|
+|Name|Value|
 |---|---|
-|id|約定ID|
-|exec_date|約定日時（UTC）|
-|price|約定価格|
-|size|約定サイズ（BTC）|
-|side|テイク方向（BUY/SELL）|
-|buy_child_order_acceptance_id|買い注文ID|
-|sell_child_order_acceptance_id|売り注文ID|
-|delay|受信遅延時間（秒）|
+|id|execution id|
+|exec_date|executed date and time (UTC)|
+|price|executed price|
+|size|executed size (BTC)|
+|side|taker side (BUY/SELL)|
+|buy_child_order_acceptance_id|buy order id|
+|sell_child_order_acceptance_id|sell order id|
+|delay|time from execution to receipt|
+|received_time|received time|
 
 ##### boards
 
